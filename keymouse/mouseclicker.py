@@ -5,6 +5,7 @@ import win32con
 
 # todo implement feature where can record mouse positions and whether you click or not
 #  so that you can make a proper tester setup instead of manually tracking and writing cords.
+# Would be creating a macro
 
 def click_at(x, y, times=1, delay=0):
     #http://timgolden.me.uk/pywin32-docs/win32api__SetCursorPos_meth.html

@@ -2,219 +2,172 @@ import win32con
 import win32api
 from time import sleep
 from keymouse.vkcodes import VK_CODE
-from ctypes import windll
+
 
 # Not using win32api.VkKeyScan because I am dealing with all
-# keys on keyboard, not just characters.
+# keys on the keyboard, not just characters.
 # Would be useful for programs where just care about characters
 
-'''
-# Was Euro Truck Simulator 2 that lead me to discovering one and two, since before was using simple games.
-i = "a"
-win32api.keybd_event(0, win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)# Works for some directX games like Euro Truck Simulator 2 but not other applications like notepad.
-# Doesn't work for games like 7 days to die which is reported to use DirectX. Works for Euro Truck Simulator 2.
-sleep(3.05)
-win32api.keybd_event(0, win32api.MapVirtualKey(VK_CODE[i], 0), win32con.KEYEVENTF_KEYUP, 0)
-
-i = "w"
-win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)#Works for some directX games like Euro Truck Simulator 2  and other applications like notepad.
+# i = "w"
+# win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)#Works for some DirectX games like Euro Truck Simulator 2  and other applications like notepad.
 # Works for games like 7 days to die and Stardew Valley.
-sleep(3.05)
-win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), win32con.KEYEVENTF_KEYUP, 0)
+#
+#
+# So going with
+# win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
+# to be on the safe side since have not found a downside to sending both vk code and scan code.
 
-i = "d"
-win32api.keybd_event(VK_CODE[i], 0, 0,0) #Doesn't work for some directX games like Euro Truck Simulator 2  BUT works for other applications like notepad.
-# Works for games like 7 days to die and Stardew Valley.
-sleep(3.05)
-win32api.keybd_event(VK_CODE[i], 0, win32con.KEYEVENTF_KEYUP, 0)
 
-So going with
-win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
-to be on safe side since have not found a downside to sending both vk code and scan code.
-'''
-
-# Pass a string you want typed out on keyboard.
-# Ex: "My shift" will have keys m y s h i f t  presss on keyboard.
-def typeout_string(value: str):
-    return 1
-
-# Pass a collection of keys that you wanted pressed. Collection must contain strings.
-# Ex: press_keys(["shift"]) will have shift key pressed, not type out shift on keyboard.
-def press_keys(keys):
-    for i in keys:
-        # http://timgolden.me.uk/pywin32-docs/win32api__keybd_event_meth.html
-        win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
+def type_out_string(string: str):
+    '''
+    Invokes key events to type out word as if were typing it out on a physical keyboard.
+    Ex: type_out_string("shift") would have the word shift typed out, not press the shift key.
+    :param string: Word or sentence want typed out.
+    '''
+    for character in string:
+        vkcode, needshift = identify_correct_key(character)
+        if needshift:
+            # http://timgolden.me.uk/pywin32-docs/win32api__keybd_event_meth.html
+            win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
         sleep(0.05)
-        win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), win32con.KEYEVENTF_KEYUP, 0)
-
-
-#Note pressing and holding a won't cause several a's to be written out!
-def press_keys_and_hold(*keys):
-    for i in keys:
-        win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
+        win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
         sleep(0.05)
+        win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
+        if needshift:
+            win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
+                                 win32con.KEYEVENTF_KEYUP, 0)
 
 
-def press_keys_hold_and_release(*keys):
-    press_keys_and_hold(keys)
-    release(keys)
-
-
-def release(*keys):
-    for i in keys:
-        win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), win32con.KEYEVENTF_KEYUP, 0)
+def press_keys(collectionkeys):
+    """
+    Presses and then releases key for each key in collection.
+    Ex: press_keys(["shift"]) will have shift key pressed, not type out shift.
+    Ex: press_keys(["H","e","l","l","o")  to have Hello typed. Should use type_out_string if want to type out words.
+    :param collectionkeys: A collection of strings which are names of keys
+    """
+    for key in collectionkeys:
+        vkcode, needshift = identify_correct_key(key)
         sleep(0.05)
-
-# todo Eventually this function will determine what vk and scan code to send base on the strings passed.
-#  Since the virtual and scan code for $ or A are the same as 4 and a, need to determine if need shift key held
-#   Down or not. That is what this function is for. Plan to use it in all functions which will then
-#    send the value to win32api.keybd_event, and also invoke shift key if needed. Want to be able to
-#     Have the funcctionality of holding keys down, and releasing them while also handling the special characters
-#      That need shift state.
-def identify_correct_key():
-
-    i = "w"
-    win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)#Works for some directX games like Euro Truck Simulator 2  and other applications like notepad.
-    # Works for games like 7 days to die and Stardew Valley.
-    sleep(3.05)
-    win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), win32con.KEYEVENTF_KEYUP, 0)
+        if needshift:
+            win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
+        sleep(0.05)
+        win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
+        sleep(0.05)
+        win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
+        sleep(0.05)
+        if needshift:
+            win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
+                                 win32con.KEYEVENTF_KEYUP, 0)
 
 
-    return 1
+def press_keys_and_hold(collectionkeys):
+    """
+    Presses and holds key down for all keys in collection.
+    Keeping key pressed won't cause key to be invoked several times (i.e. won't get several a's by holding a key down.)
+    :param collectionkeys: A collection of strings which are names of keys.
+    """
+    for key in collectionkeys:
+        vkcode, needshift = identify_correct_key(key)
+        sleep(0.05)
+        if needshift:
+            win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
+        sleep(0.05)
+        win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
+        sleep(0.05)
+        if needshift:
+            win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
+                                 win32con.KEYEVENTF_KEYUP, 0)
 
 
-# Use when want to send uppercase letters or special characters like $
-# todo plan to have this be replaced by identify_correct_key, that way can keep functionality of
-#  holding key down while not having duplicate code
-def shift_press_keys(*keys: str):
-    for i in keys:
-        if i == ' ':
-            win32api.keybd_event(VK_CODE['spacebar'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['spacebar'], 0, win32con.KEYEVENTF_KEYUP, 0)
-            continue
-        if i.islower():  # Only true for lower case letters.
-            win32api.keybd_event(VK_CODE[i], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE[i], 0, win32con.KEYEVENTF_KEYUP, 0)
-            continue
+def press_keys_hold_and_release(collectionkeys):
+    """
+    Presses and holds key down and then releases them after all keys in collection are pressed down.
+    Note can't do ctrl+alt+del since it is a special key sequence known as the secure attention sequence
+    Currently not going to set things up so program can invoke that sequence.
+    :param collectionkeys: A collection of strings which are names of keys
+    """
+    press_keys_and_hold(collectionkeys)
+    release(collectionkeys)
 
-        win32api.keybd_event(VK_CODE['left_shift'], 0, 0, 0)
 
-        if i.isupper():  # Only true for upper case letters.
-            i = i.lower()
-            win32api.keybd_event(VK_CODE[i], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE[i], 0, win32con.KEYEVENTF_KEYUP, 0)
+def release(collectionkeys):
+    """
+    Stops key press for each key in collection.
+    :param collectionkeys: A collection of strings which are names of keys
+    """
+    for key in collectionkeys:
+        sleep(0.05)
+        vkcode, needshift = identify_correct_key(key)
+        win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
 
-        elif i == '~':
-            win32api.keybd_event(VK_CODE['`'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['`'], 0, win32con.KEYEVENTF_KEYUP, 0)
 
-        elif i == '!':
-            win32api.keybd_event(VK_CODE['1'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['1'], 0, win32con.KEYEVENTF_KEYUP, 0)
+def identify_correct_key(key: str):
+    """
+    Identifies the VK code of key passed in and if need to press shift key to access it
+    Ex: $ requires VK code of 4 key and need to have shift button pressed.
 
-        elif i == '@':
-            win32api.keybd_event(VK_CODE['2'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['2'], 0, win32con.KEYEVENTF_KEYUP, 0)
+    Can pass both name of character keys and non character keys like F1.
 
-        elif i == '#':
-            win32api.keybd_event(VK_CODE['3'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['3'], 0, win32con.KEYEVENTF_KEYUP, 0)
+    :param key: name of key want to know proper VK code of
+    :return: tuple
+        - int: VKcode of key
+        - boolean: if need shift key pressed
+    """
+    if key == ' ':
+        return VK_CODE['spacebar'], False
 
-        elif i == '$':
-            win32api.keybd_event(VK_CODE['4'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['4'], 0, win32con.KEYEVENTF_KEYUP, 0)
+    if len(key) == 1 and key.islower():  # is a lower case letter
+        return VK_CODE[key], False
+    if len(key) == 1 and key.isupper():  # is a upper case letter
+        return VK_CODE[key.lower()], True
 
-        elif i == '%':
-            win32api.keybd_event(VK_CODE['5'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['5'], 0, win32con.KEYEVENTF_KEYUP, 0)
+    if len(key) == 1:  # '\\' will still be true
+        if key == '~':
+            return VK_CODE['`'], True
+        elif key == '!':
+            return VK_CODE['1'], True
+        elif key == '@':
+            return VK_CODE['2'], True
+        elif key == '#':
+            return VK_CODE['3'], True
+        elif key == '$':
+            return VK_CODE['4'], True
+        elif key == '%':
+            return VK_CODE['5'], True
+        elif key == '^':
+            return VK_CODE['6'], True
+        elif key == '&':
+            return VK_CODE['7'], True
+        elif key == '*':
+            return VK_CODE['8'], True
+        elif key == '(':
+            return VK_CODE['9'], True
+        elif key == ')':
+            return VK_CODE['0'], True
+        elif key == '_':
+            return VK_CODE['-'], True
+        elif key == '+':  # There is a vk code for + but not = but need to hold shift to get +.
+            return VK_CODE['+'], True
+        elif key == '=':
+            return VK_CODE['+'], False
+        elif key == '{':
+            return VK_CODE['['], True
+        elif key == '}':
+            return VK_CODE[']'], True
+        elif key == '|':
+            return VK_CODE['\\'], True
+        elif key == ':':
+            return VK_CODE[';'], True
+        elif key == '"':
+            return VK_CODE['\''], True
+        elif key == '<':
+            return VK_CODE[','], True
+        elif key == '>':
+            return VK_CODE['.'], True
+        elif key == '?':
+            return VK_CODE['/'], True
+        else:
+            return VK_CODE[key], False
 
-        elif i == '^':
-            win32api.keybd_event(VK_CODE['6'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['6'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '&':
-            win32api.keybd_event(VK_CODE['7'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['7'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '*':
-            win32api.keybd_event(VK_CODE['8'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['8'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '(':
-            win32api.keybd_event(VK_CODE['9'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['9'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == ')':
-            win32api.keybd_event(VK_CODE['0'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['0'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '_':
-            win32api.keybd_event(VK_CODE['-'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['-'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '=':  # for some reason there is a vk code for + but not =.
-            win32api.keybd_event(VK_CODE['+'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['+'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '{':
-            win32api.keybd_event(VK_CODE['['], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['['], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '}':
-            win32api.keybd_event(VK_CODE[']'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE[']'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '|':
-            win32api.keybd_event(VK_CODE['\\'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['\\'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == ':':
-            win32api.keybd_event(VK_CODE[';'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE[';'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '"':
-            win32api.keybd_event(VK_CODE['\''], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['\''], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '<':
-            win32api.keybd_event(VK_CODE[','], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE[','], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '>':
-            win32api.keybd_event(VK_CODE['.'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['.'], 0, win32con.KEYEVENTF_KEYUP, 0)
-
-        elif i == '?':
-            win32api.keybd_event(VK_CODE['/'], 0, 0, 0)
-            sleep(.05)
-            win32api.keybd_event(VK_CODE['/'], 0, win32con.KEYEVENTF_KEYUP, 0)
-        else: #is a non character key such as enter
-            win32api.keybd_event(VK_CODE['left_shift'], 0, win32con.KEYEVENTF_KEYUP, 0)
-            win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
-            sleep(0.05)
-            win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), win32con.KEYEVENTF_KEYUP, 0)
-
-        win32api.keybd_event(VK_CODE['left_shift'], 0, win32con.KEYEVENTF_KEYUP, 0)
+    else:  # is a non character key
+        return VK_CODE[key], False
