@@ -3,7 +3,6 @@ import win32api
 from time import sleep
 from keymouse.vkcodes import VK_CODE
 
-
 # Not using win32api.VkKeyScan because I am dealing with all
 # keys on the keyboard, not just characters.
 # Would be useful for programs where just care about characters
@@ -17,6 +16,8 @@ from keymouse.vkcodes import VK_CODE
 # win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
 # to be on the safe side since have not found a downside to sending both vk code and scan code.
 
+SLEEP_TIME = 0.05  # Helps reduce likelihood of keys being pressed out of order.
+
 
 def type_out_string(string: str):
     '''
@@ -26,12 +27,13 @@ def type_out_string(string: str):
     '''
     for character in string:
         vkcode, needshift = identify_correct_key(character)
+        sleep(SLEEP_TIME)
         if needshift:
             # http://timgolden.me.uk/pywin32-docs/win32api__keybd_event_meth.html
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
         if needshift:
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
@@ -47,14 +49,14 @@ def press_keys(collectionkeys):
     """
     for key in collectionkeys:
         vkcode, needshift = identify_correct_key(key)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         if needshift:
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         if needshift:
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
                                  win32con.KEYEVENTF_KEYUP, 0)
@@ -68,12 +70,12 @@ def press_keys_and_hold(collectionkeys):
     """
     for key in collectionkeys:
         vkcode, needshift = identify_correct_key(key)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         if needshift:
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         if needshift:
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
                                  win32con.KEYEVENTF_KEYUP, 0)
@@ -96,7 +98,7 @@ def release(collectionkeys):
     :param collectionkeys: A collection of strings which are names of keys
     """
     for key in collectionkeys:
-        sleep(0.05)
+        sleep(SLEEP_TIME)
         vkcode, needshift = identify_correct_key(key)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
 
