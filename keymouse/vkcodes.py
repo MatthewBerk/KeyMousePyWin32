@@ -1,4 +1,6 @@
 #googled python virtual key code dictionary
+# Documentation for VK codes: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+
 VK_CODE = {'backspace':0x08,
            'tab':0x09,
            'clear':0x0C,
