@@ -16,7 +16,8 @@ from keymouse.vkcodes import VK_CODE
 # win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
 # to be on the safe side since have not found a downside to sending both vk code and scan code.
 
-SLEEP_TIME = 0.05  # Helps reduce likelihood of keys being pressed out of order.
+#Todo maybe make this a class so can change SLEEP_TIME for objects, or also passing value for time to wait between keypresses and key releases
+SLEEP_TIME = 0.05  # Helps reduce likelihood of keys being pressed out of order and making sure key is pressed.
 
 
 def type_out_string(string: str):
