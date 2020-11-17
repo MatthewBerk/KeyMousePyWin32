@@ -9,7 +9,8 @@ from keymouse.vkcodes import VK_CODE
 # Would be useful for programs where just care about characters
 
 # i = "w"
-# win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)#Works for some DirectX games like Euro Truck Simulator 2  and other applications like notepad.
+# win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
+# Works for some DirectX games like Euro Truck Simulator 2  and other applications like notepad.
 # Works for games like 7 days to die and Stardew Valley.
 #
 #
@@ -19,13 +20,13 @@ from keymouse.vkcodes import VK_CODE
 
 
 def type_out_string(string: str, delay_between_presses=0.05, delay_between_releases=0.05):
-    '''
+    """
     Invokes key events to type out word as if were typing it out on a physical keyboard.
     Ex: type_out_string("shift") would have the word shift typed out, not press the shift key.
     :param string: Word or sentence want typed out.
-    :param delay_between_presses: time to wait before press a key when about to press a key.
-    :param delay_between_releases: time to wait before releasing a key when about to release it.
-    '''
+    :param delay_between_presses: Time to wait before press a key when about to press a key.
+    :param delay_between_releases: Time to wait before releasing a key when about to release it.
+    """
     for character in string:
         vkcode, needshift = identify_correct_key(character)
         if needshift:
