@@ -3,6 +3,7 @@ import win32api
 from time import sleep
 from keymouse.vkcodes import VK_CODE
 
+
 # Not using win32api.VkKeyScan because I am dealing with all
 # keys on the keyboard, not just characters.
 # Would be useful for programs where just care about characters
@@ -16,91 +17,99 @@ from keymouse.vkcodes import VK_CODE
 # win32api.keybd_event(VK_CODE[i], win32api.MapVirtualKey(VK_CODE[i], 0), 0, 0)
 # to be on the safe side since have not found a downside to sending both vk code and scan code.
 
-#Todo maybe make this a class so can change SLEEP_TIME for objects, or also passing value for time to wait between keypresses and key releases
-SLEEP_TIME = 0.05  # Helps reduce likelihood of keys being pressed out of order and making sure key is pressed.
 
-
-def type_out_string(string: str):
+def type_out_string(string: str, delay_between_presses=0.05, delay_between_releases=0.05):
     '''
     Invokes key events to type out word as if were typing it out on a physical keyboard.
     Ex: type_out_string("shift") would have the word shift typed out, not press the shift key.
     :param string: Word or sentence want typed out.
+    :param delay_between_presses: time to wait before press a key when about to press a key.
+    :param delay_between_releases: time to wait before releasing a key when about to release it.
     '''
     for character in string:
         vkcode, needshift = identify_correct_key(character)
-        sleep(SLEEP_TIME)
         if needshift:
+            sleep(delay_between_presses)
             # http://timgolden.me.uk/pywin32-docs/win32api__keybd_event_meth.html
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
-        sleep(SLEEP_TIME)
+        sleep(delay_between_presses)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
-        sleep(SLEEP_TIME)
+        sleep(delay_between_releases)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
         if needshift:
+            sleep(delay_between_releases)
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
                                  win32con.KEYEVENTF_KEYUP, 0)
 
 
-def press_keys(collectionkeys):
+def press_keys(collection_of_keys, delay_between_presses=0.05, delay_between_releases=0.05):
     """
     Presses and then releases key for each key in collection.
     Ex: press_keys(["shift"]) will have shift key pressed, not type out shift.
     Ex: press_keys(["H","e","l","l","o")  to have Hello typed. Should use type_out_string if want to type out words.
-    :param collectionkeys: A collection of strings which are names of keys
+    :param collection_of_keys: A collection of strings which are names of keyboard keys.
+    :param delay_between_presses: Time to wait before press a key when about to press a key.
+    :param delay_between_releases: Time to wait before releasing a key when about to release it.
     """
-    for key in collectionkeys:
+    for key in collection_of_keys:
         vkcode, needshift = identify_correct_key(key)
-        sleep(SLEEP_TIME)
         if needshift:
+            sleep(delay_between_presses)
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
-        sleep(SLEEP_TIME)
+        sleep(delay_between_presses)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
-        sleep(SLEEP_TIME)
+        sleep(delay_between_releases)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
-        sleep(SLEEP_TIME)
         if needshift:
+            sleep(delay_between_releases)
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
                                  win32con.KEYEVENTF_KEYUP, 0)
 
 
-def press_keys_and_hold(collectionkeys):
+def press_keys_and_hold(collection_of_keys, delay_between_presses=0.05, delay_between_shift_release=0.05):
     """
     Presses and holds key down for all keys in collection.
     Keeping key pressed won't cause key to be invoked several times (i.e. won't get several a's by holding a key down.)
-    :param collectionkeys: A collection of strings which are names of keys.
+    Does press and release shift key, if the key specified requires shift state.
+    :param collection_of_keys: A collection of strings which are names of keyboard keys.
+    :param delay_between_presses: Time to wait before press a key when about to press a key.
+    :param delay_between_shift_release: Time to wait before releasing the shift key when about to release it.
     """
-    for key in collectionkeys:
+    for key in collection_of_keys:
         vkcode, needshift = identify_correct_key(key)
-        sleep(SLEEP_TIME)
         if needshift:
+            sleep(delay_between_presses)
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0), 0, 0)
-        sleep(SLEEP_TIME)
+        sleep(delay_between_presses)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), 0, 0)
-        sleep(SLEEP_TIME)
         if needshift:
+            sleep(delay_between_shift_release)
             win32api.keybd_event(VK_CODE['left_shift'], win32api.MapVirtualKey(VK_CODE['left_shift'], 0),
                                  win32con.KEYEVENTF_KEYUP, 0)
 
 
-def press_keys_hold_and_release(collectionkeys):
+def press_keys_hold_and_release(collection_of_keys, delay_between_presses=0.05, delay_between_releases=0.05):
     """
     Presses and holds key down and then releases them after all keys in collection are pressed down.
     Note can't do ctrl+alt+del since it is a special key sequence known as the secure attention sequence
     Currently not going to set things up so program can invoke that sequence.
-    :param collectionkeys: A collection of strings which are names of keys
+    :param collection_of_keys: A collection of strings which are names of keyboard keys.
+    :param delay_between_presses: Time to wait before press a key when about to press a key.
+    :param delay_between_releases: Time to wait before releasing a key when about to release it.
     """
-    press_keys_and_hold(collectionkeys)
-    release(collectionkeys)
+    press_keys_and_hold(collection_of_keys, delay_between_presses, delay_between_releases)
+    release(collection_of_keys, delay_between_releases)
 
 
-def release(collectionkeys):
+def release(collection_of_keys, delay_between_releases=0.05):
     """
     Stops key press for each key in collection.
-    :param collectionkeys: A collection of strings which are names of keys
+    :param collection_of_keys: A collection of strings which are names of keyboard keys.
+    :param delay_between_releases: Time to wait before releasing a key when about to release it.
     """
-    for key in collectionkeys:
-        sleep(SLEEP_TIME)
+    for key in collection_of_keys:
         vkcode, needshift = identify_correct_key(key)
+        sleep(delay_between_releases)
         win32api.keybd_event(vkcode, win32api.MapVirtualKey(vkcode, 0), win32con.KEYEVENTF_KEYUP, 0)
 
 
