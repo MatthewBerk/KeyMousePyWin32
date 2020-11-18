@@ -12,6 +12,8 @@ if __name__ == '__main__':
     print(y)
     """
 
+    inputkeys.record_key_presses()
+
     sleep(5)
 
     x, y = win32api.GetCursorPos()

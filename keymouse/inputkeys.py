@@ -4,6 +4,7 @@ from time import sleep
 from keymouse.vkcodes import VK_CODE
 
 
+
 # Not using win32api.VkKeyScan because I am dealing with all
 # keys on the keyboard, not just characters.
 # Would be useful for programs where just care about characters
@@ -99,10 +100,10 @@ def press_keys_hold_and_release(collection_of_keys, delay_between_presses=0.05, 
     :param delay_between_releases: Time to wait before releasing a key when about to release it.
     """
     press_keys_and_hold(collection_of_keys, delay_between_presses, delay_between_releases)
-    release(collection_of_keys, delay_between_releases)
+    release_keys(collection_of_keys, delay_between_releases)
 
 
-def release(collection_of_keys, delay_between_releases=0.05):
+def release_keys(collection_of_keys, delay_between_releases=0.05):
     """
     Stops key press for each key in collection.
     :param collection_of_keys: A collection of strings which are names of keyboard keys.
@@ -184,3 +185,30 @@ def identify_correct_key(key: str):
 
     else:  # is a non character key
         return VK_CODE[key], False
+
+
+
+# So I found possibly a better way to record keys, using  a library called keyboard. Though it using ctypes
+# so may use it when creating this project again but using ctypes instead of win32api.
+# Current issue with this is due to speed at which checks, sometimes it print key twice when only press it oncce
+# and when hit left shift, shift then left_shift gets printed.
+# Try a few experiments and see if GetKeyState would be better for what you want.
+#  otherwise may just have to stick with slow input where take input from user and they specify if they are going
+#  to press a non character key (excluding when hold shift to get certain characters)
+# Also look into GetKeyboardState
+def record_key_presses(exit_key = "esc"):
+    while True:
+        for i in VK_CODE.keys():
+            #https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate?redirectedfrom=MSDN
+            if win32api.GetAsyncKeyState(VK_CODE[i]):
+                print(i)
+        sleep(0.1)
+
+# todo setup a function to read a file and call apropiate methods to press keys
+"""
+ts
+pk
+pkh
+pkhr
+rk
+"""
