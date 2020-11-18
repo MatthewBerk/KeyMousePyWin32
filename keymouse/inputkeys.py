@@ -187,24 +187,30 @@ def identify_correct_key(key: str):
         return VK_CODE[key], False
 
 
-
-# So I found possibly a better way to record keys, using  a library called keyboard. Though it using ctypes
-# so may use it when creating this project again but using ctypes instead of win32api.
-# Current issue with this is due to speed at which checks, sometimes it print key twice when only press it oncce
-# and when hit left shift, shift then left_shift gets printed.
 # Try a few experiments and see if GetKeyState would be better for what you want.
 #  otherwise may just have to stick with slow input where take input from user and they specify if they are going
 #  to press a non character key (excluding when hold shift to get certain characters)
 # Also look into GetKeyboardState
 def record_key_presses(exit_key = "esc"):
+
     while True:
         for i in VK_CODE.keys():
             #https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate?redirectedfrom=MSDN
-            if win32api.GetAsyncKeyState(VK_CODE[i]):
+            #temp = win32api.GetAsyncKeyState(VK_CODE[i])
+            #https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
+            temp = win32api.GetKeyState(VK_CODE[i])
+            # todo ok need to get some other stuff done today, and spent morning refreshing myself on concepts
+            #  MAYBE keep track of last value got from win32api.GetKetState, if get same value then don't print
+            #   key again, if different, then update value. MAYBE this ccan resolve issue of a specific key, such as 'a'
+            #    being recorded several times as pressed when in reality, was just pressing key once and didn't let go
+            #     fast enough. IF IT WORKS, means don't need to mess with timer!!!
+            #      Would only need to keep track of 256 keys I believe, probably less but double check.
+            if temp < 0:
                 print(i)
-        sleep(0.1)
+                print(temp)
+        sleep(0.05)
 
-# todo setup a function to read a file and call apropiate methods to press keys
+# todo setup a function to read a file and call appropriate methods to press keys
 """
 ts
 pk

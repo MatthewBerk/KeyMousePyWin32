@@ -5,7 +5,7 @@ VK_CODE = {'backspace':0x08,
            'tab':0x09,
            'clear':0x0C,
            'enter':0x0D,
-           'shift':0x10,
+           #'shift':0x10, #Already specify left and right shift.
            'ctrl':0x11,
            'alt':0x12,
            'pause':0x13,

@@ -12,13 +12,16 @@ if __name__ == '__main__':
     print(y)
     """
 
-    inputkeys.record_key_presses()
 
     sleep(5)
 
-    x, y = win32api.GetCursorPos()
-    print(x)
-    print(y)
+    inputkeys.record_key_presses()
+
+    #sleep(5)
+
+    # x, y = win32api.GetCursorPos()
+    # print(x)
+    # print(y)
 
 
 
@@ -39,9 +42,9 @@ if __name__ == '__main__':
 
     #mouseclicker.click_at_current_pos(delay=10, times= 2)
 
-    s = "."
-    print(s.islower())
-    print(s.isupper())
+    # s = "."
+    # print(s.islower())
+    # print(s.isupper())
 
     #inputkeys.press_keys_and_hold(["a"])
 
