@@ -193,22 +193,44 @@ def identify_correct_key(key: str):
 # Also look into GetKeyboardState
 def record_key_presses(exit_key = "esc"):
 
-    while True:
+    key_tracker = {}
+    example_file = open("ExampleTypingFile", "w")
+
+    keep_going = True
+
+    while keep_going:
         for i in VK_CODE.keys():
             #https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate?redirectedfrom=MSDN
             #temp = win32api.GetAsyncKeyState(VK_CODE[i])
             #https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
-            temp = win32api.GetKeyState(VK_CODE[i])
-            # todo ok need to get some other stuff done today, and spent morning refreshing myself on concepts
-            #  MAYBE keep track of last value got from win32api.GetKetState, if get same value then don't print
-            #   key again, if different, then update value. MAYBE this ccan resolve issue of a specific key, such as 'a'
-            #    being recorded several times as pressed when in reality, was just pressing key once and didn't let go
-            #     fast enough. IF IT WORKS, means don't need to mess with timer!!!
-            #      Would only need to keep track of 256 keys I believe, probably less but double check.
-            if temp < 0:
-                print(i)
-                print(temp)
-        sleep(0.05)
+            temp = win32api.GetKeyState(VK_CODE[i])# since don't care about if key was pressed sincce last called
+            # method, since documentation says shouldn't rely on it since other programs may call it also.
+
+            if temp < 0:#Key is pressed down.
+                if i in key_tracker.keys():
+                    if key_tracker.get(i) == 0:#Last key check showed key was up, so we update its status.
+                        key_tracker[i] = 1
+                        example_file.write(f"{i} ")
+                        if i == exit_key:
+                            keep_going = False
+                            break
+                        #print(i)
+                        #print(f"{temp} \n")
+                else:#This is a new key press during recording session.
+                    key_tracker[i] = 1
+
+            else:#Key is in up position.
+                if i in key_tracker.keys():
+                    if key_tracker.get(i) > 0:  # Last key check showed key was down, so we update its status.
+                        key_tracker[i] = 0
+                        #print(f"updated to up: {i}")
+                        #print(f"updated to up: {temp} \n")
+                else:  # This is a new key press during recording session.
+                    key_tracker[i] = 0
+
+        #sleep(0.05)
+
+    example_file.close()
 
 # todo setup a function to read a file and call appropriate methods to press keys
 """
