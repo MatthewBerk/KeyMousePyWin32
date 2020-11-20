@@ -187,10 +187,13 @@ def identify_correct_key(key: str):
         return VK_CODE[key], False
 
 
-# Try a few experiments and see if GetKeyState would be better for what you want.
-#  otherwise may just have to stick with slow input where take input from user and they specify if they are going
-#  to press a non character key (excluding when hold shift to get certain characters)
-# Also look into GetKeyboardState
+# So far it seems to be working in a variety of applications and direct XX games like euro truck simulator 2
+# todo test speed of it and how taxing program is to pc.
+#   TEST a varierty of keys including shift.
+
+# todo after that, setup way to speccify if should hold down a key, how should write that in instructions.
+#  though also for how long. Maybe keep track of time? Though debate if really need that....
+#   Since time thing may require multiple threads
 def record_key_presses(exit_key = "esc"):
 
     key_tracker = {}

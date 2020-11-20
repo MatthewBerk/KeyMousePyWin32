@@ -14,6 +14,7 @@ if __name__ == '__main__':
 
 
     sleep(5)
+    print("Ready to test")
 
     inputkeys.record_key_presses()
 
