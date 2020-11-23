@@ -4,6 +4,42 @@ from keymouse import mouseclicker, inputkeys
 from time import sleep
 import win32api
 
+#Decided I wanted to have the ability to record keyboard and mouse events to same file
+def start_recording_session(filepath):
+    example_file = open(filepath, "w")
+    keep_recording = True
+    while keep_recording:
+        val = input("Type k for recording keyboard. Type m for recording mouse. Type d if done: ")
+        if val == "k":
+            print("KEY \n",
+                  "ts: Just typing out a word or sentence, not pressing non-character keys excluding shift.\n",
+                  "pk: Pressing any key on keyboard.\n",
+                  "pkh: Want key you entered to be held down until release.\n",
+                  "rk: Release key you entered.\n")
+
+            decision = input("Type action your going to perform so can properly record key presses: ")
+            #todo will just write to file indicating type of action (so when create function to read file, know what methouds to call).
+            # todo ALSO write if its keyboard or mouse!!!!
+            if decision == "ts":
+                print()
+            elif decision == "pk":#todo make edit to allow for specifying time, if don't specify then will only release key when rk for key is invoked
+                print()
+            elif decision == "pkh":
+                print()
+            elif decision == "rk":
+                print()
+            else:
+                print(f"{decision} is not a valid input!")
+        elif val == "m":
+            print()
+        elif val == "d":
+            keep_recording = False
+        else:
+            print(f"{val} is not a valid input!")
+
+#todo setup function to read file.
+
+
 if __name__ == '__main__':
 
     """

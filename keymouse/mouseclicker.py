@@ -74,7 +74,7 @@ def click_and_hold(x, y, left_down_delay=0.05):
     """
     win32api.SetCursorPos((x, y))
     sleep(left_down_delay)
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)  # Coordinates seem to only matter when doing
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
 
 
 def click_and_hold_at_current_pos(left_down_delay=0.05):
@@ -84,3 +84,13 @@ def click_and_hold_at_current_pos(left_down_delay=0.05):
     x, y = win32api.GetCursorPos()
     sleep(left_down_delay)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
+
+
+# thinking will require using to hit a button to record mouse movements
+# since otherwise could end up with a lot of mouse recordings unless do
+#  time limit then I may  end up with less precise code
+
+#ACTUALLY recording cordinates several times may not be bad.
+# THOUGH only proper way to know is to test both/ try writing both
+def record_mouse(exit_key = "esc"):
+    print()

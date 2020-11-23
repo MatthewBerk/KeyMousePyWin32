@@ -187,21 +187,22 @@ def identify_correct_key(key: str):
         return VK_CODE[key], False
 
 
-# So far it seems to be working in a variety of applications and direct XX games like euro truck simulator 2
-# todo test speed of it and how taxing program is to pc.
-#   TEST a varierty of keys including shift.
+# Not going to track how long key was pressed down since require spawning a timer thread for every key press
+# May do it when create this project using a different library that implements key press listeners instead
+# of needing to check state of the key.
+# For now since this is personnel use, which just require starting a new line and specifying if want key held down.
+# May provide option to specify time or just have it only release key when specify to on another line
+# This isn't an exact typing recorder since need to specify actions want done for keys.
+def record_key_presses(file_writing_to,exit_key = "esc", down_key_indicator = "DOWN:", up_key_indicator = "UP:", record_down_key_event = True, record_up_key_event = True):
 
-# todo after that, setup way to speccify if should hold down a key, how should write that in instructions.
-#  though also for how long. Maybe keep track of time? Though debate if really need that....
-#   Since time thing may require multiple threads
-def record_key_presses(exit_key = "esc"):
+    #note to self, reminder don't need ti invoke other functions here, only need to invoke them when reading file.
 
     key_tracker = {}
-    example_file = open("ExampleTypingFile", "w")
+    example_file = file_writing_to
 
-    keep_going = True
+    no_exit_key = True
 
-    while keep_going:
+    while no_exit_key:
         for i in VK_CODE.keys():
             #https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate?redirectedfrom=MSDN
             #temp = win32api.GetAsyncKeyState(VK_CODE[i])
@@ -213,9 +214,10 @@ def record_key_presses(exit_key = "esc"):
                 if i in key_tracker.keys():
                     if key_tracker.get(i) == 0:#Last key check showed key was up, so we update its status.
                         key_tracker[i] = 1
-                        example_file.write(f"{i} ")
+                        if record_down_key_event:
+                            example_file.write(f"{down_key_indicator}{i} ")
                         if i == exit_key:
-                            keep_going = False
+                            no_exit_key = False
                             break
                         #print(i)
                         #print(f"{temp} \n")
@@ -226,6 +228,11 @@ def record_key_presses(exit_key = "esc"):
                 if i in key_tracker.keys():
                     if key_tracker.get(i) > 0:  # Last key check showed key was down, so we update its status.
                         key_tracker[i] = 0
+                        if record_up_key_event:
+                            example_file.write(f"{up_key_indicator}{i} ")
+                        if i == exit_key:
+                            no_exit_key = False
+                            break
                         #print(f"updated to up: {i}")
                         #print(f"updated to up: {temp} \n")
                 else:  # This is a new key press during recording session.
@@ -234,6 +241,8 @@ def record_key_presses(exit_key = "esc"):
         #sleep(0.05)
 
     example_file.close()
+
+
 
 # todo setup a function to read a file and call appropriate methods to press keys
 """
